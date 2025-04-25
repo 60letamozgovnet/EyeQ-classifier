@@ -1,0 +1,10 @@
+torch>=2.0.0
+torchvision
+transformers
+scikit-learn
+onnx
+onnxruntime-gpu
+onnxruntime
+opencv-python
+pillow
+pandas
