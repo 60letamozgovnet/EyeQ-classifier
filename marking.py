@@ -5,8 +5,8 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
-path_to_test_csv = r"D:/code/python/ML_PIR/main/data/Label_EyeQ_test.csv"
-path_to_train_csv = r"D:/code/python/ML_PIR/main/data/Label_EyeQ_train.csv"
+path_to_test_csv = r"/data/Label_EyeQ_test.csv"
+path_to_train_csv = r"/data/Label_EyeQ_train.csv"
 
 test_df = pd.read_csv(path_to_test_csv)
 train_df = pd.read_csv(path_to_train_csv)
@@ -37,7 +37,7 @@ def marking_dataset(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 if __name__ == "__main__":
-    img_dir = r"D:/code/python/ML_PIR/main/data/preprocessed/"
+    img_dir = r"/data/preprocessed/"
     df = remove_rows(df, img_dir)
     df = marking_dataset(df)
     logger.info(df)
