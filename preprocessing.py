@@ -67,8 +67,8 @@ def dataset_preprocess(input_dir, output_dir, csv_paths = None):
         path_to_train_csv = csv_paths[1]
 
     else:
-        path_to_test_csv = r"D:/code/python/ML_PIR/main/data/Label_EyeQ_test.csv"
-        path_to_train_csv = r"D:/code/python/ML_PIR/main/data/Label_EyeQ_train.csv"
+        path_to_test_csv = r"/data/Label_EyeQ_test.csv"
+        path_to_train_csv = r"/data/Label_EyeQ_train.csv"
 
         test_df = pd.read_csv(path_to_test_csv)
         train_df = pd.read_csv(path_to_train_csv)
@@ -87,7 +87,7 @@ def dataset_preprocess(input_dir, output_dir, csv_paths = None):
 
 
 if __name__ == "__main__":
-    input_dir = r"D:\code\python\ML_PIR\main\data\train"
-    output_dir = "D:/code/python/ML_PIR/main/data/preprocessed"
+    input_dir = r"\data\train"
+    output_dir = "/data/preprocessed"
 
     dataset_preprocess(input_dir, output_dir)
