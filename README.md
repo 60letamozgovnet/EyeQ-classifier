@@ -42,3 +42,5 @@
    ```bash
    git clone https://github.com/60letamozgovnet/EyeQ-Classifier.git
    cd EyeQ-Classifier
+   ```
+3. Запустите run.sh
