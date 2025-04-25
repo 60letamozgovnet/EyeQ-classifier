@@ -18,7 +18,7 @@ from marking import marking_dataset, remove_rows, df
 
 from transformers import AutoModelForImageClassification, AutoFeatureExtractor
 
-IMG_DIR = r"D:/code/python/ML_PIR/main/data/preprocessed/"
+IMG_DIR = r"data/preprocessed/"
 
 class EyeQDataset(Dataset):
     def __init__(self, df: pd.DataFrame, img_dir, transform: transforms.Compose = None):
