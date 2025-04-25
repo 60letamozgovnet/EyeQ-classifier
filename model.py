@@ -125,7 +125,7 @@ dummy_input = torch.randn(1, 3, 224, 224).to(device)
 torch.onnx.export(
     model, 
     dummy_input, 
-    r'D:\code\python\ML_PIR\main\EyeQ.onnx',
+    r'./EyeQ.onnx',
     export_params=True,
     opset_version=11,
     do_constant_folding=True,
