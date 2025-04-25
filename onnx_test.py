@@ -2,8 +2,8 @@ import onnxruntime as ort
 import numpy as np
 import time
 
-session_cpu = ort.InferenceSession(r'D:\code\python\ML_PIR\main\EyeQ.onnx', providers=["CPUExecutionProvider"])
-session_gpu = ort.InferenceSession(r'D:\code\python\ML_PIR\main\EyeQ.onnx', providers=["CUDAExecutionProvider"])
+session_cpu = ort.InferenceSession(r'/EyeQ.onnx', providers=["CPUExecutionProvider"])
+session_gpu = ort.InferenceSession(r'/EyeQ.onnx', providers=["CUDAExecutionProvider"])
 
 
 input_data = np.random.randn(1, 3, 224, 224).astype(np.float32)
