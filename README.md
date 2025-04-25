@@ -38,11 +38,11 @@
 ## ⚙️ Бысткий старт (Docker)
 
 1. Установите Docker
-2. Скачайте датасет по ссылке, создайте папку preprocessed в data и переместите все изображения туда 
-3. Склонируйте проект:
+2. Скачайте датасет по ссылке, создайте папку train в data и переместите все изображения туда
+3. Создайте папку preprocessed в data 
+4. Склонируйте проект:
    ```bash
    git clone https://github.com/60letamozgovnet/EyeQ-Classifier.git
    cd EyeQ-Classifier
    ```
-4. Запустите run.sh
-   
+5. Запустите run.sh
