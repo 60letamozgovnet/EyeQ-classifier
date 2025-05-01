@@ -21,7 +21,6 @@ from preprocessing import augmentation, crop_img
 
 from transformers import AutoModelForImageClassification, AutoFeatureExtractor
 
-
 config = get_config()
 # относительно корневой директории
 DATA_DIR = config['DATA_DIR'] 

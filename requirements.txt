@@ -8,3 +8,4 @@ onnxruntime
 opencv-python
 pillow
 pandas
+tensorboard
