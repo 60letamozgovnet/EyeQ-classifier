@@ -5,6 +5,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY main/ ./main/
+COPY ./ ./
 
-CMD ["python", "main/model.py"]
+CMD ["python", "src/model.py"]
