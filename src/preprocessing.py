@@ -47,20 +47,21 @@ def preprocessing(img_path, output_dir):
     try:
         img = Image.open(img_path).convert("RGB")
         img_np = crop_img(np.array(img))  # обрезаем чёрные края
-        img_pil = Image.fromarray(img_np).resize((224, 224), Image.BILINEAR)
+
+        # CLAHE обработка
+        channels = cv.split(img_np)
+        clahe_applied = [clahe_transform.apply(c) for c in channels]
+        img_clahe = cv.merge(clahe_applied)
+
+        img_pil = Image.fromarray(img_clahe).resize((224, 224), Image.BILINEAR)
         img_np = np.array(img_pil)
 
         # Преобразование в тензор с аугментацией
         img_tensor = rotate_transform(img_pil)
         img_tensor_np = (img_tensor.permute(1, 2, 0).numpy() * 255).astype(np.uint8)
 
-        # CLAHE обработка
-        channels = cv.split(img_tensor_np)
-        clahe_applied = [clahe_transform.apply(c) for c in channels]
-        img_clahe = cv.merge(clahe_applied)
-
         output_path = os.path.join(output_dir, os.path.basename(img_path))
-        img_pil = Image.fromarray((img_clahe * 255).astype(np.uint8))
+        img_pil = Image.fromarray((img_tensor_np * 255).astype(np.uint8))
         img_pil.save(output_path)
         del img, img_tensor, img_np, img_pil, img_tensor_np, channels, clahe_applied, img_clahe
         gc.collect()
