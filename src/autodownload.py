@@ -3,6 +3,7 @@ import logging
 import zipfile
 from get_path import get_config
 import sys
+from unzip_all import main as unzip
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -38,3 +39,4 @@ if __name__ == "__main__":
     config = get_config()
     path = config["DATA_DIR"]
     download_dataset(path)
+    unzip()
