@@ -3,16 +3,18 @@ import torch.nn as nn
 import torchvision.models as models
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Dataset
+from torch.utils.tensorboard import SummaryWriter
 import pandas as pd
 import os
 from PIL import Image
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import f1_score
 import logging
+import time
 from get_path import get_config
 
-# from torch.utils.tensorboard import SummaryWriter
-# writer = SummaryWriter(log_dir="runs/eyeq")
+
+writer = SummaryWriter(log_dir="runs/eyeq")
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -86,15 +88,18 @@ def create_model():
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # "cpu"
 logger.info(f"Using device: {device}")
 
-def train(model, device, criterion, optimizer, save_path, num_epoch = 10):
+def train(model, device, criterion, optimizer, save_path, num_epoch = 10, patience = 3):
     model.to(device)
     best_f1 = 0.0
+    counter = 0 # считает плохие эпохи
 
     for epoch in range(num_epoch):
+        start_time = time.time()
         model.train()
 
         correct = 0
         total = 0
+        train_loss = 0.0
 
         for images, labels in train_loader:
             images, labels = images.to(device), labels.to(device).float().unsqueeze(1)
@@ -104,6 +109,7 @@ def train(model, device, criterion, optimizer, save_path, num_epoch = 10):
             loss = criterion(outputs, labels)
             loss.backward()
             optimizer.step()
+            train_loss = loss.item()
 
             logger.info(f"Train Loss: {loss.item():.4f}")
 
@@ -131,19 +137,29 @@ def train(model, device, criterion, optimizer, save_path, num_epoch = 10):
 
         val_acc = correct / total
         f1 = f1_score(all_labels, all_preds)
-
+        epoch_time = time.time() - start_time
         logger.info(f"Epoch: {epoch}\nValidation Loss: {val_loss/len(test_loader):.4f}, Accuracy: {val_acc:.2%}, F1 Score: {f1:.4f}")
-    
+
         if f1 > best_f1:
+            counter = 0
             best_f1 = f1
             torch.save(model.state_dict(), save_path)
             print(f"✅ New best model saved with F1: {best_f1:.4f}")
 
-# writer.add_scalar("Loss/val", val_loss/len(test_loader), cnt)
-# writer.add_scalar("Accuracy/val", val_acc, cnt)
-# writer.add_scalar("F1/val", f1, cnt)
+        else:
+            counter += 1
+        
+        writer.add_scalar('Loss/train', train_loss, epoch)
+        writer.add_scalar('Loss/val', val_loss, epoch)
+        writer.add_scalar('F1/val', f1, epoch)
+        writer.add_scalar('Time/epoch', epoch_time, epoch)
 
-# writer.close()
+        if counter == patience:
+            logger.info("Model not improving")
+            break
+
+
+
 def create_crit_optim(model):
     criterion = nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
