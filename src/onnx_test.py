@@ -1,9 +1,13 @@
 import onnxruntime as ort
 import numpy as np
 import time
+import logging
 
-session_cpu = ort.InferenceSession(r'/EyeQ.onnx', providers=["CPUExecutionProvider"])
-session_gpu = ort.InferenceSession(r'/EyeQ.onnx', providers=["CUDAExecutionProvider"])
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
+logger = logging.getLogger(__name__)
+
+session_cpu = ort.InferenceSession('./EyeQ.onnx', providers=["CPUExecutionProvider"])
+session_gpu = ort.InferenceSession('./EyeQ.onnx', providers=["CUDAExecutionProvider"])
 
 
 input_data = np.random.randn(1, 3, 224, 224).astype(np.float32)
@@ -21,8 +25,9 @@ def measure_latency(session, input_name, input_data, runs=100):
 
 input_name = session_cpu.get_inputs()[0].name
 
-cpu_latency = measure_latency(session_cpu, input_name, input_data)
-gpu_latency = measure_latency(session_gpu, input_name, input_data)
+if __name__ == "__main__":
+    cpu_latency = measure_latency(session_cpu, input_name, input_data)
+    gpu_latency = measure_latency(session_gpu, input_name, input_data)
 
-print(f"Средняя задержка CPU: {cpu_latency:.2f} ms")
-print(f"Средняя задержка GPU: {gpu_latency:.2f} ms")
+    logger.info(f"Средняя задержка CPU: {cpu_latency:.2f} ms")
+    logger.info(f"Средняя задержка GPU: {gpu_latency:.2f} ms")

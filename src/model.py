@@ -17,7 +17,7 @@ from get_path import get_config
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
 
-from preprocessing import augmentation, crop_img
+from preprocessing import augmentation
 
 from transformers import AutoModelForImageClassification, AutoFeatureExtractor
 
@@ -57,7 +57,7 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])])
 
 df = pd.read_csv(os.path.join(DATA_DIR, 'marking.csv'))
-print(df)
+logger.info(df)
 
 train_df, val_df = train_test_split(df, test_size=0.2, stratify=df["bin_marks"], random_state=42)
 
@@ -67,19 +67,21 @@ test_dataset = EyeQDataset(val_df, IMG_DIR, transform=transform)
 train_loader  = DataLoader(train_dataset, batch_size=64, shuffle=True)
 test_loader  = DataLoader(test_dataset, batch_size=64, shuffle=True)
 
-model_name = "google/efficientnet-b0" # https://huggingface.co/google/efficientnet-b0
-model = AutoModelForImageClassification.from_pretrained(model_name)
+def create_model():
+    model_name = "google/efficientnet-b0" # https://huggingface.co/google/efficientnet-b0
+    model = AutoModelForImageClassification.from_pretrained(model_name)
 
-# model = models.efficientnet_b0(pretrained = True)
-# model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
+    # model = models.efficientnet_b0(pretrained = True)
+    # model.classifier[1] = nn.Linear(model.classifier[1].in_features, 1)
 
-model.classifier = nn.Sequential(
-    nn.Dropout(0.2, inplace=True),
-    nn.Linear(model.classifier.in_features, 1)
-)
+    model.classifier = nn.Sequential(
+        nn.Dropout(0.2, inplace=True),
+        nn.Linear(model.classifier.in_features, 1)
+    )
 
-model.config.num_labels = 1
-model.config.id2label = {0:'usable'}
+    model.config.num_labels = 1
+    model.config.id2label = {0:'usable'}
+    return model
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu") # "cpu"
 logger.info(f"Using device: {device}")
@@ -142,27 +144,30 @@ def train(model, device, criterion, optimizer, save_path, num_epoch = 10):
 # writer.add_scalar("F1/val", f1, cnt)
 
 # writer.close()
-
-criterion = nn.BCEWithLogitsLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-# best_model.pth
-
-train(model, device, criterion, optimizer, "./best_model.pth")
-
+def create_crit_optim(model):
+    criterion = nn.BCEWithLogitsLoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    return criterion, optimizer
 
 dummy_input = torch.randn(1, 3, 224, 224).to(device)
 
-torch.onnx.export(
-    model, 
-    dummy_input, 
-    DATA_DIR + 'EyeQ.onnx',
-    export_params=True,
-    opset_version=11,
-    do_constant_folding=True,
-    input_names=['input'],
-    output_names=['output'],
-    dynamic_axes={
-        'input': {0: 'batch_size'}, 
-        'output': {0: 'batch_size'}
-    }
-)
+
+
+if __name__ == "__main__":
+    model = create_model()
+    criterion, optimizer = create_crit_optim(model) 
+    train(model, device, criterion, optimizer, "./best_model.pth")
+    torch.onnx.export(
+        model, 
+        dummy_input, 
+        os.path.join(DATA_DIR, 'EyeQ.onnx'),
+        export_params=True,
+        opset_version=11,
+        do_constant_folding=True,
+        input_names=['input'],
+        output_names=['output'],
+        dynamic_axes={
+            'input': {0: 'batch_size'}, 
+            'output': {0: 'batch_size'}
+        }
+    )
