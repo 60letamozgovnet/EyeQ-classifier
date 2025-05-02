@@ -6,6 +6,7 @@ import preprocessing
 import os
 import logging
 import autodownload
+import torch
 from unzip_all import main as unzip
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
@@ -51,11 +52,26 @@ if __name__ == '__main__':
             'output': {0: 'batch_size'}
         }
     )
+    quantized_model = torch.quantizationquantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+    torch.onnx.export(
+        quantized_model,
+        model.dummy_input,
+        os.path.join(DATA_DIR, 'EyeQ_quantized.onnx'),
+        export_params=True,
+        opset_version=13,
+        do_constant_folding=True,
+        input_names=['input'],
+        output_names=['output'],
+        dynamic_axes={'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}}
+    )
 
     logger.info("Train of model was complete\n")
 
     session_cpu = onnx_test.session_cpu
     session_gpu = onnx_test.session_gpu
+
+    session_cpu_quant = onnx_test.session_cpu_quant
+    session_gpu_quant = onnx_test.session_gpu_quant
 
     input_data = onnx_test.input_data
     input_name = session_cpu.get_inputs()[0].name
@@ -65,3 +81,9 @@ if __name__ == '__main__':
 
     logger.info(f"Средняя задержка CPU: {cpu_latency:.2f} ms")
     logger.info(f"Средняя задержка GPU: {gpu_latency:.2f} ms")
+
+    cpu_latency = onnx_test.measure_latency(session_cpu_quant, input_name, input_data)
+    gpu_latency = onnx_test.measure_latency(session_gpu_quant, input_name, input_data)
+
+    logger.info(f"Средняя задержка CPU для сжатой модели: {cpu_latency:.2f} ms")
+    logger.info(f"Средняя задержка GPU для сжатой модели: {gpu_latency:.2f} ms")

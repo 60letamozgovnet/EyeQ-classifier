@@ -12,6 +12,7 @@ from sklearn.metrics import f1_score
 import logging
 import time
 from get_path import get_config
+from torch.quantization import quantize_dynamic
 
 
 writer = SummaryWriter(log_dir="runs/eyeq")
@@ -186,4 +187,16 @@ if __name__ == "__main__":
             'input': {0: 'batch_size'}, 
             'output': {0: 'batch_size'}
         }
+    )
+    quantized_model = quantize_dynamic(model, {nn.Linear}, dtype=torch.qint8)
+    torch.onnx.export(
+        quantized_model,
+        dummy_input,
+        os.path.join(DATA_DIR, 'EyeQ_quantized.onnx'),
+        export_params=True,
+        opset_version=13,
+        do_constant_folding=True,
+        input_names=['input'],
+        output_names=['output'],
+        dynamic_axes={'input': {0: 'batch_size'}, 'output': {0: 'batch_size'}}
     )
