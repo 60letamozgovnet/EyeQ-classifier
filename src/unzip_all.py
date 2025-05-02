@@ -5,7 +5,6 @@ import glob
 import logging
 from tqdm import tqdm
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 logger = logging.getLogger()
 
