@@ -5,6 +5,7 @@ import onnx_test
 import preprocessing
 import os
 import logging
+import autodownload
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
 logger = logging.getLogger(__name__)
@@ -13,6 +14,11 @@ if __name__ == '__main__':
     config = get_path.get_config()
     DATA_DIR = config['DATA_DIR']
     SRC_DIR = config["SRC_DIR"]
+
+    flag = True if input("Do you want to install dataset? (y/n): ").lower() == 'y' else False
+    if flag:
+        autodownload.download_dataset(DATA_DIR)
+
     input_dir = os.path.join(DATA_DIR, 'train')
     output_dir = os.path.join(DATA_DIR, "preprocessed")
 
