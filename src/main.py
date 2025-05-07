@@ -7,6 +7,8 @@ import os
 import logging
 import autodownload
 import torch
+import onnxruntime as ort
+import numpy as np
 from unzip_all import main as unzip
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
@@ -67,14 +69,14 @@ if __name__ == '__main__':
 
     logger.info("Train of model was complete\n")
 
-    session_cpu = onnx_test.session_cpu
-    session_gpu = onnx_test.session_gpu
+    session_cpu = ort.InferenceSession('./EyeQ.onnx', providers=["CPUExecutionProvider"])
+    session_gpu = ort.InferenceSession('./EyeQ.onnx', providers=["CUDAExecutionProvider"])
 
-    session_cpu_quant = onnx_test.session_cpu_quant
-    session_gpu_quant = onnx_test.session_gpu_quant
+    session_cpu_quant = ort.InferenceSession('./EyeQ_quantized.onnx', providers=["CPUExecutionProvider"])
+    session_gpu_quant = ort.InferenceSession('./EyeQ_quantized.onnx', providers=["CUDAExecutionProvider"])
 
-    input_data = onnx_test.input_data
     input_name = session_cpu.get_inputs()[0].name
+    input_data = np.random.randn(1, 3, 224, 224).astype(np.float32)
     
     cpu_latency = onnx_test.measure_latency(session_cpu, input_name, input_data)
     gpu_latency = onnx_test.measure_latency(session_gpu, input_name, input_data)
